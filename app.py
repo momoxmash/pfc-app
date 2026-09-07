@@ -118,7 +118,7 @@ if st.button("AIに献立を提案してもらう", type="primary", use_containe
                         time.sleep(3)
                         continue
                     raise e
-            )
+            
             
             result = DailySuggestion.model_validate_json(response.text)
 

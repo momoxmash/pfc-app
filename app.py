@@ -4,7 +4,7 @@ from google import genai
 from google.genai import errors
 from pydantic import BaseModel, Field
 
-st.set_page_config(page_title="PFC献立サポーター", layout="centered")
+st.set_page_config(page_title="まゆみのPFC献立サポーター", layout="centered")
 
 st.title("🥗 PFC献立サポーター")
 st.caption("残りの目標数値・ボリューム配分に合わせてAIが献立を提案します。")

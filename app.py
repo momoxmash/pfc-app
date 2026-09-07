@@ -1,5 +1,7 @@
 import streamlit as st
+import time
 from google import genai
+from google.genai import errors
 from pydantic import BaseModel, Field
 
 st.set_page_config(page_title="PFC献立サポーター", layout="centered")
@@ -27,7 +29,7 @@ class DailySuggestion(BaseModel):
     plans: list[MealPlan] = Field(description="提案された各食事")
     advice: str = Field(description="栄養バランスのアドバイス")
 
-# 2. 残りPFC入力（デフォルト値を変更）
+# 2. 残りPFC入力（デフォルト値: P88g, F47g, C160g）
 st.subheader("1. 残りのPFCを入力")
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -74,9 +76,7 @@ if st.button("AIに献立を提案してもらう", type="primary", use_containe
         st.warning("食事を少なくとも1つ選択してください。")
     else:
         with st.spinner("指定食材と配分バランスを考慮して献立を考案中..."):
-            # StreamlitのSecretsまたは直接指定からキーを取得
-            import os
-            api_key = st.secrets.get("GEMINI_API_KEY", "YOUR_API_KEY")
+            api_key = st.secrets["GEMINI_API_KEY"]
             client = genai.Client(api_key=api_key)
             
             prompt = f"""
@@ -97,15 +97,13 @@ if st.button("AIに献立を提案してもらう", type="primary", use_containe
             ・指定食材がある場合は、無理のない範囲で献立に組み込んでください。
             """
 
-            import time
-            from google.genai import errors
-
-            # 混雑時（503）の自動リトライ処理
+            # 503混雑エラー対策：最大4回まで間隔を空けて自動再試行
             response = None
-            for attempt in range(3):
+            max_retries = 4
+            for attempt in range(max_retries):
                 try:
                     response = client.models.generate_content(
-                        model="gemini-2.5-flash",  # 安定稼働中の推奨モデル
+                        model="gemini-3.6-flash",
                         contents=prompt,
                         config={
                             "response_mime_type": "application/json",
@@ -114,12 +112,13 @@ if st.button("AIに献立を提案してもらう", type="primary", use_containe
                     )
                     break
                 except errors.ServerError as e:
-                    if attempt < 2:
-                        time.sleep(3)
+                    if attempt < max_retries - 1:
+                        wait_time = (attempt + 1) * 3
+                        time.sleep(wait_time)
                         continue
+                    st.error("Googleのサーバーが混み合っています。少し待ってから再度お試しください。")
                     raise e
-            
-            
+
             result = DailySuggestion.model_validate_json(response.text)
 
             st.success("献立が完成しました！")

@@ -98,7 +98,7 @@ if st.button("AIに献立を提案してもらう", type="primary", use_containe
             """
 
             response = client.models.generate_content(
-                model="gemini-3-flash",
+                model="gemini-2.5-flash",
                 contents=prompt,
                 config={
                     "response_mime_type": "application/json",

@@ -97,13 +97,27 @@ if st.button("AIに献立を提案してもらう", type="primary", use_containe
             ・指定食材がある場合は、無理のない範囲で献立に組み込んでください。
             """
 
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt,
-                config={
-                    "response_mime_type": "application/json",
-                    "response_schema": DailySuggestion,
-                },
+            import time
+            from google.genai import errors
+
+            # 混雑時（503）の自動リトライ処理
+            response = None
+            for attempt in range(3):
+                try:
+                    response = client.models.generate_content(
+                        model="gemini-2.5-flash",  # 安定稼働中の推奨モデル
+                        contents=prompt,
+                        config={
+                            "response_mime_type": "application/json",
+                            "response_schema": DailySuggestion,
+                        },
+                    )
+                    break
+                except errors.ServerError as e:
+                    if attempt < 2:
+                        time.sleep(3)
+                        continue
+                    raise e
             )
             
             result = DailySuggestion.model_validate_json(response.text)

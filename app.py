@@ -6,8 +6,8 @@ from pydantic import BaseModel, Field
 
 st.set_page_config(page_title="PFC献立サポーター", layout="centered")
 
-st.title("🥗 まゆみPFC献立サポーター")
-st.caption("残りの目標数値・ボリューム配分に合わせてまゆみのためにAIが献立を提案します")
+st.title("🥗 PFC献立サポーター")
+st.caption("残りの目標数値・ボリューム配分に合わせてまゆみのためにAIが献立を提案します✨")
 
 # 1. スキーマ定義
 class MealItem(BaseModel):
@@ -68,7 +68,7 @@ if check_d: target_meals.append(f"夕食（ボリューム: {weight_d}）")
 
 # 4. 使いたい食材
 st.subheader("3. 使いたい食材（任意）")
-preferred_ingredients = st.text_input("冷蔵庫にある食材など（カンマ区切り）", placeholder="例: 鶏むね肉, 卵, 豆腐, キャベツ")
+preferred_ingredients = st.text_input("冷蔵庫にある食材など", placeholder="例: 鶏むね肉, ゆで卵, キャベツ")
 
 # 5. 提案ボタン
 if st.button("AIに献立を提案してもらう", type="primary", use_container_width=True):
